@@ -1,0 +1,12 @@
+{
+    "name": "Netkahn Chrome Application",
+    "description": "A chrome app that loads the netkahn application",
+    "version": "0.1",
+    "manifest_version": 2,
+    "app": {
+        "background": {
+            "scripts": ["background.js"]
+        }
+    },
+    "icons": { "16": "icon.png", "128": "icon.png" }
+}

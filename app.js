@@ -35,7 +35,7 @@ var uid = 1;
 
 var alphanumeric = /^\w+$/;
 
-if(config.readline.use) {
+if (config.readline.use) {
     var rl = readline.createInterface(process.stdin, process.stdout);
     rl.setPrompt(config.readline.prompt);
     rl.prompt();
@@ -46,14 +46,14 @@ if(config.readline.use) {
 app.set('port', port);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-app.use(favicon(path.join(__dirname,'public/img/favicon.png')));
+app.use(favicon(path.join(__dirname, 'public/img/favicon.png')));
 app.locals.version = pack.version;
 
 
 /* Routes */
 app.use(config.url, express.static(path.join(__dirname, 'public')));
-app.get(config.url, function (req, res) {
-    res.render('index', {version:pack.version});
+app.get(config.url, function(req, res) {
+    res.render('index', { version: pack.version });
 });
 
 
@@ -70,7 +70,7 @@ chat.on('connection', function(conn) {
         ip: conn.headers['x-forwarded-for'],
         role: 0,
         con: conn,
-        warn : 0
+        warn: 0
     };
 
     users[uid] = {
@@ -79,11 +79,11 @@ chat.on('connection', function(conn) {
         un: null,
         role: 0
     };
-    
-    for(i in bans) {
-        if(bans[i][0] == clients[conn.id].ip) {
-            if(Date.now() - bans[i][1] < bans[i][2]) {
-                conn.write(JSON.stringify({type:'server', info:'rejected', reason:'banned', time:bans[i][2]}));
+
+    for (i in bans) {
+        if (bans[i][0] == clients[conn.id].ip) {
+            if (Date.now() - bans[i][1] < bans[i][2]) {
+                conn.write(JSON.stringify({ type: 'server', info: 'rejected', reason: 'banned', time: bans[i][2] }));
                 return conn.close();
             } else {
                 bans.splice(i);
@@ -91,26 +91,26 @@ chat.on('connection', function(conn) {
         }
     }
 
-    conn.write(JSON.stringify({type:'server', info:'clients', clients:users}));
-    conn.write(JSON.stringify({type:'server', info:'user', client:users[uid]}));
+    conn.write(JSON.stringify({ type: 'server', info: 'clients', clients: users }));
+    conn.write(JSON.stringify({ type: 'server', info: 'user', client: users[uid] }));
     conn.on('data', function(message) {
         currentTime[conn.id] = Date.now();
         rateInterval[conn.id] = (currentTime[conn.id] - lastTime[conn.id]) / 1000;
         lastTime[conn.id] = currentTime[conn.id];
         rateLimit[conn.id] += rateInterval[conn.id];
 
-        if(rateLimit[conn.id] > 1) {
+        if (rateLimit[conn.id] > 1) {
             rateLimit[conn.id] = 1;
         }
 
-        if(rateLimit[conn.id] < 1 && JSON.parse(message).type != 'delete' && JSON.parse(message).type != 'typing' && JSON.parse(message).type != 'ping') {
+        if (rateLimit[conn.id] < 1 && JSON.parse(message).type != 'delete' && JSON.parse(message).type != 'typing' && JSON.parse(message).type != 'ping') {
             clients[conn.id].warn++;
 
-            if(clients[conn.id].warn < 6) {
-                return conn.write(JSON.stringify({type:'server', info:'spam', warn:clients[conn.id].warn}));
+            if (clients[conn.id].warn < 6) {
+                return conn.write(JSON.stringify({ type: 'server', info: 'spam', warn: clients[conn.id].warn }));
             } else {
                 bans.push([clients[conn.id].ip, Date.now(), 5 * 1000 * 60]);
-                utils.sendToAll(clients, {type:'ban', extra:clients[conn.id].un, message:'Server banned ' + clients[conn.id].un + ' from the server for 5 minutes for spamming the servers'});
+                utils.sendToAll(clients, { type: 'ban', extra: clients[conn.id].un, message: 'Server banned ' + clients[conn.id].un + ' from the server for 5 minutes for spamming the servers' });
 
                 return conn.close();
             }
@@ -118,32 +118,32 @@ chat.on('connection', function(conn) {
             try {
                 var data = JSON.parse(message);
 
-                if(data.type == 'ping') {
+                if (data.type == 'ping') {
                     return false;
                 }
 
-                if(data.type == 'typing') {
-                    return utils.sendToAll(clients, {type:'typing', typing:data.typing, user:clients[conn.id].un});
+                if (data.type == 'typing') {
+                    return utils.sendToAll(clients, { type: 'typing', typing: data.typing, user: clients[conn.id].un });
                 }
 
-                if(data.type == 'delete' && clients[conn.id].role > 0) {
-                    utils.sendToAll(clients, {type:'server', info:'delete', mid:data.message});
+                if (data.type == 'delete' && clients[conn.id].role > 0) {
+                    utils.sendToAll(clients, { type: 'server', info: 'delete', mid: data.message });
                 }
 
-                if(data.type == 'update') {
+                if (data.type == 'update') {
                     return updateUser(conn.id, data.user);
                 }
 
-                if(data.message.length > 768) {
+                if (data.message.length > 768) {
                     data.message = data.message.substring(0, 768);
                     message = JSON.stringify(data);
                 }
 
-                if(data.type == 'pm') log('message', chalk.underline(clients[conn.id].un) + ' to ' + chalk.underline(data.extra) + ': ' + data.message);
+                if (data.type == 'pm') log('message', chalk.underline(clients[conn.id].un) + ' to ' + chalk.underline(data.extra) + ': ' + data.message);
                 else log('message', '[' + data.type.charAt(0).toUpperCase() + data.type.substring(1) + '] ' + chalk.underline(clients[conn.id].un) + ': ' + data.message);
 
                 handleSocket(clients[conn.id], message);
-            } catch(err) {
+            } catch (err) {
                 return log('error', err);
             }
 
@@ -153,8 +153,8 @@ chat.on('connection', function(conn) {
 
     conn.on('close', function() {
         log('socket', chalk.underline(conn.id) + ': disconnected (' + clients[conn.id].ip + ')');
-        utils.sendToAll(clients, {type:'typing', typing:false, user:clients[conn.id].un});
-        utils.sendToAll(clients, {type:'server', info:'disconnection', user:users[clients[conn.id].id]});
+        utils.sendToAll(clients, { type: 'typing', typing: false, user: clients[conn.id].un });
+        utils.sendToAll(clients, { type: 'server', info: 'disconnection', user: users[clients[conn.id].id] });
         delete users[clients[conn.id].id];
         delete clients[conn.id];
     });
@@ -163,9 +163,9 @@ chat.on('connection', function(conn) {
 
 /* Functions */
 function updateUser(id, name) {
-    if(name.length > 2 && name.length < 17 && name.indexOf(' ') < 0 && !utils.checkUser(clients, name) && name.match(alphanumeric) && name != 'Console' && name != 'System') {
-        if(clients[id].un == null) {
-            clients[id].con.write(JSON.stringify({type:'server', info:'success'}));
+    if (name.length > 2 && name.length < 17 && name.indexOf(' ') < 0 && !utils.checkUser(clients, name) && name.match(alphanumeric) && name != 'Console' && name != 'System') {
+        if (clients[id].un == null) {
+            clients[id].con.write(JSON.stringify({ type: 'server', info: 'success' }));
             uid++;
         }
 
@@ -185,18 +185,22 @@ function updateUser(id, name) {
         var motive = 'format';
         var check = false;
 
-        if(!name.match(alphanumeric)) motive = 'format';
-        if(name.length < 3 || name.length > 16) motive = 'length';
-        if(utils.checkUser(clients, name) ||  name == 'Console' || name == 'System') motive = 'taken';
-        if(clients[id].un != null) check = true;
+        if (!name.match(alphanumeric)) motive = 'format';
+        if (name.length < 3 || name.length > 16) motive = 'length';
+        if (utils.checkUser(clients, name) || name == 'Console' || name == 'System') motive = 'taken';
+        if (clients[id].un != null) check = true;
 
-        clients[id].con.write(JSON.stringify({type:'server', info:'rejected', reason:motive, keep:check}));
-        if(clients[id].un == null) clients[id].con.close();
+        clients[id].con.write(JSON.stringify({ type: 'server', info: 'rejected', reason: motive, keep: check }));
+        if (clients[id].un == null) clients[id].con.close();
     }
 }
 
 function handleSocket(user, message) {
     var data = JSON.parse(message);
+    var security = {
+        public: "sucks for you.",
+        md5hash: ""
+    };
 
     data.id = user.id;
     data.user = user.un;
@@ -204,9 +208,10 @@ function handleSocket(user, message) {
     data.message = s.escapeHTML(data.message);
     data.mid = (Math.random() + 1).toString(36).substr(2, 5);
 
-    switch(data.type) {
+    switch (data.type) {
+
         case 'pm':
-            if(data.extra != data.user && utils.checkUser(clients, data.extra)) {
+            if (data.extra != data.user && utils.checkUser(clients, data.extra)) {
                 utils.sendToOne(clients, users, data, data.extra, 'message');
                 data.subtxt = 'PM to ' + data.extra;
                 utils.sendBack(clients, data, user);
@@ -218,10 +223,13 @@ function handleSocket(user, message) {
             }
             break;
 
-        case 'global': case 'kick': case 'ban': case 'role':
-            if(user.role > 0) {
-                if(data.type == 'global') {
-                    if(user.role == 3) {
+        case 'global':
+        case 'kick':
+        case 'ban':
+        case 'role':
+            if (user.role > 0 && isAdmin) {
+                if (data.type == 'global') {
+                    if (user.role == 3) {
                         return utils.sendToAll(clients, data);
                     } else {
                         data.subtxt = null;
@@ -230,16 +238,16 @@ function handleSocket(user, message) {
                     }
                 } else {
                     data.subtxt = null;
-                    if(data.message != data.user) {
-                        if(utils.checkUser(clients, data.message)) {
-                            switch(data.type) {
+                    if (data.message != data.user) {
+                        if (utils.checkUser(clients, data.message)) {
+                            switch (data.type) {
                                 case 'ban':
                                     var time = parseInt(data.extra);
 
-                                    if(!isNaN(time) && time > 0) {
-                                        if(user.role > 1 && utils.getUserByName(clients, data.message).role == 0) {
-                                            for(var client in clients) {
-                                                if(clients[client].un == data.message) {
+                                    if (!isNaN(time) && time > 0) {
+                                        if (user.role > 1 && utils.getUserByName(clients, data.message).role == 0) {
+                                            for (var client in clients) {
+                                                if (clients[client].un == data.message) {
                                                     bans.push([clients[client].ip, Date.now(), time * 1000 * 60]);
                                                 }
                                             }
@@ -259,20 +267,20 @@ function handleSocket(user, message) {
                                     break;
 
                                 case 'role':
-                                    if(data.extra > -1 && data.extra < 4) {
-                                        if(user.role == 3) {
+                                    if (data.extra > -1 && data.extra < 4) {
+                                        if (user.role == 3) {
                                             var role;
                                             data.role = data.extra;
                                             data.extra = data.message;
 
-                                            if(data.role == 0) role = 'User';
-                                            if(data.role == 1) role = 'Helper';
-                                            if(data.role == 2) role = 'Moderator';
-                                            if(data.role == 3) role = 'Administrator';
+                                            if (data.role == 0) role = 'User';
+                                            if (data.role == 1) role = 'Helper';
+                                            if (data.role == 2) role = 'Moderator';
+                                            if (data.role == 3) role = 'Administrator';
                                             data.message = data.user + ' set ' + data.message + '\'s role to ' + role;
 
                                             utils.sendToOne(clients, users, data, JSON.parse(message).message, 'role');
-                                            utils.sendToAll(clients, {type:'server', info:'clients', clients:users});
+                                            utils.sendToAll(clients, { type: 'server', info: 'clients', clients: users });
                                         } else {
                                             data.message = 'You don\'t have permission to do that';
                                             return utils.sendBack(clients, data, user);
@@ -285,7 +293,7 @@ function handleSocket(user, message) {
                                     break;
 
                                 case 'kick':
-                                    if(user.role > 1 && utils.getUserByName(clients, data.message).role == 0) {
+                                    if (user.role > 1 && utils.getUserByName(clients, data.message).role == 0) {
                                         data.extra = data.message;
                                         data.message = data.user + ' kicked ' + data.message + ' from the server';
                                     } else {
@@ -293,7 +301,7 @@ function handleSocket(user, message) {
                                         return utils.sendBack(clients, data, user);
                                     }
                                     break;
-                            }                            
+                            }
                             utils.sendToAll(clients, data);
                         } else {
                             data.type = 'light';
@@ -320,14 +328,14 @@ function handleSocket(user, message) {
 
 
 /* Internal */
-if(config.readline.use) {
+if (config.readline.use) {
     readLine();
 }
 
 function readLine() {
     rl.on('line', function(line) {
         var data = {};
-        if(line.indexOf('/role') == 0) {
+        if (line.indexOf('/role') == 0) {
             var string = 'Console gave ' + line.substring(6) + ' administrator permissions';
 
             data.message = string;
@@ -347,7 +355,7 @@ function readLine() {
     });
 }
 
-if(!config.ssl.use) {
+if (!config.ssl.use) {
     var http = require('http');
     server = http.createServer(app);
 } else {
@@ -365,13 +373,13 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 function onError(error) {
-    if(error.syscall !== 'listen') {
+    if (error.syscall !== 'listen') {
         throw error;
     }
 
     var bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
 
-    switch(error.code) {
+    switch (error.code) {
         case 'EACCES':
             console.error(bind + ' requires elevated privileges');
             process.exit(1);
@@ -393,4 +401,4 @@ function onListening() {
     log('start', 'Listening at ' + bind);
 }
 
-chat.installHandlers(server, {prefix:'/socket', log:function(){}});
+chat.installHandlers(server, { prefix: '/socket', log: function() {} });

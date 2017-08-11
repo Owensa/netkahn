@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script>
+    // Check for support
+    if (window.chrome && window.chrome.app && window.chrome.app.isInstalled) {
+        document.getElementById('supported').className = '';
+    } else {
+        document.getElementById('unsupported').className = '';
+    }
+</script>
+<html>
+
+<head>
+    <script src="js/netkahn.client.js" type="text/javascript"></script>
+    <script src="js/netkahn.server.hook.js" type="text/javascript"></script>
+    <script src="js/notifications.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div>Hello, Netkahn!</div>
+</body>
+
+</html>
+
+<script>
+(function () {
+    //start netkahn connection.
+    var netkahn = Init();
+    while (true) {
+        netkahn.getMessages();
+        if (isNewClientMessageEvent) { netkahn.sendMessage(); }
+    }
+})();
+
+function Init() {
+    var client = new Client("tmp", "tmp");
+    var conn = client.GetNetkahnConnection(); 
+    var nk = __RunUpdateLoop__(client, conn);
+    return nk; 
+}
+// may need to be moved to background js. 
+function __RunUpdateLoop__() {}
+__RunUpdateLoop__.prototype.constructor = function (user, server) {
+    this._user = user;
+    this._netkahnServer = server;
+}
+__RunUpdateLoop__.prototype.getMessages = function () {
+
+}
+__RunUpdateLoop__.prototype.sendMessage = function () {
+
+}
+
+</script>

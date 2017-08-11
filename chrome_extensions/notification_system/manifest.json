@@ -1,0 +1,17 @@
+{
+    "manifest_version": 2,
+
+    "name": "Netkahn Notification System",
+    "description": "This extension loads the netkahn's V.A.D.E (Very Advanced Data Exchange) Protocol in chrome",
+    "version": "1.0",
+
+    "browser_action": {
+        "default_icon": "icon.png",
+        "default_popup": "netkahn.html"
+    },
+    "permissions": [
+        "activeTab",
+        "background",
+        "https://ajax.googleapis.com/"
+    ]
+}

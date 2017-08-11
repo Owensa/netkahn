@@ -4,12 +4,19 @@
     max-height: 300px;
 }
 
-#emoji, #sound, #desktop, #greentext, #synthesis, #recognition, #inline {
+#emoji,
+#sound,
+#desktop,
+#greentext,
+#synthesis,
+#recognition,
+#inline {
     margin-left: 10px;
 }
 
-#icon-settings, #icon-audio {
-    color: white;
+#icon-settings,
+#icon-audio {
+    color: lightgrey;
     top: -7px;
     left: -3.5px;
 }
@@ -41,7 +48,7 @@
 }
 
 .helper {
-    color: #55aef6!important;
+    color: #f55549!important;
 }
 
 .moderator {
@@ -77,7 +84,8 @@
     display: none;
 }
 
-.pm , .mention {
+.pm,
+.mention {
     color: #eb9d00;
 }
 
@@ -85,12 +93,15 @@
     font-style: italic;
 }
 
-.global, .kick, .role, .ban {
+.global,
+.kick,
+.role,
+.ban {
     color: #f55549!important;
 }
 
 .info {
-    color: #55aef6;
+    color: #f55549;
 }
 
 .light {
@@ -98,11 +109,12 @@
 }
 
 .message {
-    color: #2b2b2b;
+    color: #689f38;
     margin-top: 3px;
 }
 
 .spin {
+    color: #263238;
     -webkit-animation: spin 1500ms infinite linear;
     animation: spin 1500ms infinite linear;
 }
